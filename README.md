@@ -1,10 +1,22 @@
-# intel-gpu-exporter
+# Intel GPU Exporter
 
 Get metrics from Intel GPUs
 
 ## Deployment
 
-Runs on port 8080, does stuff, is hyperglued using python and intel_gpu_top
+Runs on port 8080, tightly coupled with `intel_gpu_top` utility.
+
+## Environment Variables
+
+The following environment variables can be configured:
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `PORT` | HTTP server port for Prometheus metrics | `8080` | `9000` |
+| `REFRESH_PERIOD_MS` | Refresh period in milliseconds for polling GPU metrics | `10000` | `5000` |
+| `DEVICE` | Specific GPU device to monitor (optional), use `intel_gpu_top -L` to list available devices | `None` | `pci:card0` |
+| `DEBUG` | Enable debug logging | `False` | `True` |
+| `IS_DOCKER` | Only Docker environments are currently supported, results with non-Docker are not guaranteed| `True` | `True` |
 
 ### Docker Compose
 
@@ -13,7 +25,7 @@ version: "3.8"
 
 services:
   intel-gpu-exporter:
-    image: ghcr.io/onedr0p/intel-gpu-exporter:rolling
+    image: ghcr.io/maxim-mityutko/intel-gpu-exporter:rolling
     container_name: intel-gpu-exporter
     restart: unless-stopped
     privileged: true

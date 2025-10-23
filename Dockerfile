@@ -39,5 +39,5 @@ CMD ["/app/intel-gpu-exporter.py"]
 
 LABEL \
     org.opencontainers.image.title="intel-gpu-exporter" \
-    org.opencontainers.image.authors="Devin Buhl <devin.kray@gmail.com>" \
-    org.opencontainers.image.source="https://github.com/onedr0p/intel-gpu-exporter"
+    org.opencontainers.image.authors="Maxim Mityutko" \
+    org.opencontainers.image.source="https://github.com/maxim-mityutko/intel-gpu-exporter"

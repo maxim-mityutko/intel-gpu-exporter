@@ -119,16 +119,15 @@ def update(data):
 
 
 if __name__ == "__main__":
-    if os.getenv("DEBUG", False):
-        debug = logging.DEBUG
-    else:
-        debug = logging.INFO
-    logging.basicConfig(format="%(asctime)s - %(message)s", level=debug)
-
-    start_http_server(8080)
-
+    # Environment variables
+    port = os.getenv("PORT", 8080)
     period = os.getenv("REFRESH_PERIOD_MS", 10000)
     device = os.getenv("DEVICE")
+    debug = os.getenv("DEBUG", False)
+
+    logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG if debug else logging.INFO)
+
+    start_http_server(port)
 
     if device is not None:
         cmd = "intel_gpu_top -J -p -s {} -d {}".format(int(period), device)
@@ -141,31 +140,32 @@ if __name__ == "__main__":
 
     logging.info("Started " + cmd)
     output = ""
+    first_object = True  # Track if we need to skip opening bracket
 
-    if os.getenv("IS_DOCKER", False):
+    if os.getenv("IS_DOCKER", True):
         for line in process.stdout:
             line = line.decode("utf-8").strip()
             output += line
+            
+            # Skip initial opening bracket
+            if first_object and output.startswith("["):
+                output = output[1:]
+                first_object = False
+            
+            # Try to find complete JSON objects
+            # Look for closing } that completes an object
+            if output.count("{") > 0 and output.count("{") == output.count("}"):
+                try:
+                    # Remove any trailing comma
+                    data_str = output.strip().rstrip(",")
+                    logging.debug(f"Attempting to parse: {data_str}")
+                    data = json.loads(data_str)
+                    logging.debug(f"Parsed data: {data}")
+                    update(data)
+                    output = ""  # Reset for next object
+                except json.JSONDecodeError as ex:
+                    logging.debug(f"JSON decode error: {ex}")
+                    continue
 
-            try:
-                data = json.loads(output.strip(","))
-                logging.debug(data)
-                update(data)
-                output = ""
-            except json.JSONDecodeError:
-                continue
     else:
-        while process.poll() is None:
-            read = process.stdout.readline()
-            output += read.decode("utf-8")
-            logging.debug(output)
-            if read == b"},\n":
-                update(json.loads(output[:-2]))
-                output = ""
-
-    process.kill()
-
-    if process.returncode != 0:
-        logging.error("Error: " + process.stderr.read().decode("utf-8"))
-
-    logging.info("Finished")
+        raise Exception("Not in Docker, the functionality is not yet implemented for this mode.")
