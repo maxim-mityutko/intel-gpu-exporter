@@ -131,9 +131,9 @@ if __name__ == "__main__":
     device = os.getenv("DEVICE")
 
     if device is not None:
-        cmd = "intel_gpu_top -J -s {} -d {}".format(int(period), device)
+        cmd = "intel_gpu_top -J -p -s {} -d {}".format(int(period), device)
     else:
-        cmd = "intel_gpu_top -J -s {}".format(int(period))
+        cmd = "intel_gpu_top -J -p -s {}".format(int(period))
 
     process = subprocess.Popen(
         cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
